@@ -146,7 +146,6 @@
             50% { opacity: 1; }
         }
 
-
         .map-title {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -183,7 +182,6 @@
             border-color: #9e9e9e;
             font-weight: bold;
         }
-
 
         .chat-title {
             font-size: 1.3em;
@@ -223,6 +221,13 @@
         .ai-message {
             background: rgba(255, 255, 255, 0.1);
             margin-right: 20%;
+        }
+
+        .system-message {
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.85em;
+            text-align: center;
         }
 
         .chat-input-container {
@@ -308,7 +313,6 @@
             <div style="margin-bottom: 20px;">
                 <h3 style="color: #9e9e9e; margin-bottom: 10px;">👥 NPCs in der Nähe</h3>
                 <div class="npc-list" id="npcList">
-                    <!-- NPCs werden hier dynamisch eingefügt -->
                 </div>
             </div>
             
@@ -326,145 +330,235 @@
                 </div>
                 <h2 style="margin-bottom: 15px; color: #9e9e9e;">Aktuelle Umgebung</h2>
                 <div id="roomDescription" style="line-height: 1.6;">
-                    Du stehst in einem langen, dunklen Flur. Die Wände sind mit alten Familienfotos bedeckt, 
-                    deren Augen dir zu folgen scheinen. Das Knarren des Holzbodens unter deinen Füßen 
-                    erfüllt die Stille. Mehrere Türen führen zu verschiedenen Räumen in diesem mysteriösen Haus.
+                    Wird geladen...
                 </div>
             </div>
-            <div class="chat-container">
-                <div class="chat-title">🤖 KI Assistent</div>
+            <div class="center-panel" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="chat-title">🤖 KI Assistent (Perchance AI)</div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="message ai-message">
-                        Willkommen in der Welt von "No, I'm not A Human". Ich bin dein KI-Assistent. 
-                        Wie kann ich dir helfen, dieses mysteriöse Haus zu erkunden?
+                        Verbindung zum Haus wird hergestellt...
                     </div>
                 </div>
                 <div class="chat-input-container">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Nachricht eingeben..." onkeypress="handleKeyPress(event)">
-                    <button class="send-button" onclick="sendMessage()">Senden</button>
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Sprich mit dem Haus..." onkeypress="handleKeyPress(event)">
+                    <button class="send-button" id="sendBtn" onclick="sendMessage()">Senden</button>
                 </div>
             </div>
+        </div>
         <div class="right-panel">
-            <!-- Rechte Spalte bleibt leer für zukünftige Features -->
+            <h3 style="color: #9e9e9e; margin-bottom: 10px;">Status</h3>
+            <p style="font-size: 0.9em; color: #ccc;">KI-Status: <span id="aiStatus" style="color: #0f0;">Verbunden (Bridge)</span></p>
         </div>
     </div>
 
     <script>
+        // --- GLOBALE VARIABLEN & DATEN ---
         const locations = {
-            'haus_flur': { name: 'Haus - Flur', description: 'Der zentrale Flur des mysteriösen Hauses' },
-            'haus_bad': { name: 'Haus - Bad', description: 'Ein kleines, feuchtes Bad mit Spiegel' },
-            'haus_wohnzimmer1': { name: 'Haus - Wohnzimmer 1', description: 'Gemütliches Wohnzimmer mit Kamin' },
-            'haus_wohnzimmer2': { name: 'Haus - Wohnzimmer 2', description: 'Spiegelverkehrtes Wohnzimmer' },
-            'haus_schlafzimmer': { name: 'Haus - Schlafzimmer', description: 'Großes Schlafzimmer mit vierposter-Bett' },
-            'haus_lagerraum': { name: 'Haus - Lagerraum', description: 'Überfüllter Raum mit alten Kisten' },
-            'haus_kueche': { name: 'Haus - Küche', description: 'Alte Küche mit kupfernen Pfannen' },
-            'haus_keller': { name: 'Haus - Keller', description: 'Dunkler Keller mit mysteriöser Maschine' },
-            'haustuer_vorne': { name: 'Haustür - Vorne', description: 'Die Eingangstür des Hauses' }
+            'haus_flur': { name: 'Haus - Flur' },
+            'haus_bad': { name: 'Haus - Bad' },
+            'haus_wohnzimmer1': { name: 'Haus - Wohnzimmer 1' },
+            'haus_wohnzimmer2': { name: 'Haus - Wohnzimmer 2' },
+            'haus_schlafzimmer': { name: 'Haus - Schlafzimmer' },
+            'haus_lagerraum': { name: 'Haus - Lagerraum' },
+            'haus_kueche': { name: 'Haus - Küche' },
+            'haus_keller': { name: 'Haus - Keller' },
+            'haustuer_vorne': { name: 'Haustür - Vorne' }
         };
 
         const rooms = {
             hallway: {
                 title: "Flur",
                 location: 'haus_flur',
-                description: "Du stehst in einem langen, dunklen Flur. Die Wände sind mit alten Familienfotos bedeckt, deren Augen dir zu folgen scheinen. Das Knarren des Holzbodens unter deinen Füßen erfüllt die Stille. Mehrere Türen führen zu verschiedenen Räumen in diesem mysteriösen Haus.",
+                description: "Ein langer, dunkler Flur mit knarrenden Dielen und alten Familienfotos.",
                 connections: ["bathroom", "livingroom1", "bedroom", "kitchen"]
             },
             bathroom: {
                 title: "Bad",
                 location: 'haus_bad',
-                description: "Ein kleines, feuchtes Bad mit einem alten Spiegel über dem Waschbecken. Der Spiegel zeigt manchmal mehr als nur dein Spiegelbild. Der Wasserhahn tropft rhythmisch, als würde er eine geheime Botschaft senden.",
+                description: "Ein feuchtes Bad mit einem tropfenden Wasserhahn und einem seltsamen Spiegel.",
                 connections: ["hallway", "bedroom"]
             },
             livingroom1: {
                 title: "Wohnzimmer 1",
                 location: 'haus_wohnzimmer1',
-                description: "Ein gemütliches Wohnzimmer mit einem alten Kamin, dessen Feuer nie wirklich ausgeht. Die Möbel sind mit weißen Laken abgedeckt, als würden sie auf jemanden warten. Ein alter Fernseher flackert gelegentlich ohne Strom.",
+                description: "Ein gemütliches Zimmer mit einem Kamin, in dem ein ewiges Feuer brennt.",
                 connections: ["hallway", "livingroom2", "kitchen"]
             },
             livingroom2: {
                 title: "Wohnzimmer 2",
                 location: 'haus_wohnzimmer2',
-                description: "Ein zweites Wohnzimmer, das seltsamerweise identisch mit dem ersten aussieht, aber alles ist spiegelverkehrt. Die Bücher im Regal sind in einer Sprache geschrieben, die du nicht verstehen kannst.",
+                description: "Ein spiegelverkehrtes Abbild des ersten Wohnzimmers. Alles wirkt hier fremd.",
                 connections: ["livingroom1", "storageroom"]
             },
             bedroom: {
                 title: "Schlafzimmer",
                 location: 'haus_schlafzimmer',
-                description: "Ein großes Schlafzimmer mit einem vierposter-Bett. Die Vorhänge bewegen sich, obwohl kein Wind weht. Auf dem Nachttisch liegt ein altes Tagebuch, dessen Seiten sich von selbst umblättern.",
+                description: "Ein Schlafzimmer mit einem Himmelbett. Vorhänge wehen ohne Wind.",
                 connections: ["hallway", "bathroom", "storageroom"]
             },
             storageroom: {
                 title: "Lagerraum",
                 location: 'haus_lagerraum',
-                description: "Ein überfüllter Lagerraum mit alten Kisten und vergessenen Gegenständen. Manchmal hört man leise Stimmen aus den Kisten, als würden die Gegenstände Geschichten erzählen.",
+                description: "Vollgestopft mit Kisten. Man hört leises Wispern aus den Ecken.",
                 connections: ["livingroom2", "bedroom", "basement"]
             },
             kitchen: {
                 title: "Küche",
                 location: 'haus_kueche',
-                description: "Eine alte Küche mit kupfernen Pfannen, die an der Decke hängen. Der Kühlschrank ist immer kalt, obwohl er nicht eingesteckt ist. Manchmal riecht man frisch gebackenes Brot.",
+                description: "Eine alte Küche. Es riecht nach Brot, obwohl niemand backt.",
                 connections: ["hallway", "livingroom1", "basement"]
             },
             basement: {
                 title: "Keller",
                 location: 'haus_keller',
-                description: "Ein dunkler, feuchter Keller mit Steinwänden. In der Ecke steht eine mysteriöse Maschine, die leise summt. Die Luft hier ist kalt und riecht nach Ozon und verlorenen Erinnerungen.",
+                description: "Dunkel und kalt. Eine unbekannte Maschine summt hier monoton.",
                 connections: ["storageroom", "kitchen"]
             }
         };
 
         let npcs = [
-            {
-                id: "SJHDNBDUID",
-                name: "Der Wächter",
-                appearance: "Eine hohe, schattenhafte Gestalt mit leuchtenden Augen",
-                personality: "Mysteriös, wachsam, geheimnisvoll",
-                location: "haus_flur"
-            },
-            {
-                id: "KDMXNCB872",
-                name: "Elena",
-                appearance: "Junge Frau mit langen, dunklen Haaren und einem alten Kleid",
-                personality: "Niedlich, freundlich, aber etwas ängstlich",
-                location: "haus_wohnzimmer1"
-            }
+            { id: "SJHDNBDUID", name: "Der Wächter", location: "haus_flur", personality: "Mysteriös" },
+            { id: "KDMXNCB872", name: "Elena", location: "haus_wohnzimmer1", personality: "Niedlich, aber ängstlich" }
         ];
 
-        let currentTime = {
-            day: 1,
-            month: "Januar",
-            year: 2024,
-            hour: 0,
-            minute: 0
-        };
-
-        let lastNightEvent = -1;
+        let currentTime = { day: 1, month: "Januar", year: 2024, hour: 0, minute: 0 };
         let currentRoom = 'hallway';
-        let messageCount = 0;
+        let pendingRequests = new Map();
+
+        // --- KI BRÜCKE (COMMUNICATION) ---
+
+        window.addEventListener("message", (event) => {
+            // Wir hören auf die Antwort vom Perchance-Fenster
+            if (event.data.type === "AI_RESPONSE") {
+                const resolve = pendingRequests.get(event.data.requestId);
+                if (resolve) {
+                    resolve(event.data.text);
+                    pendingRequests.delete(event.data.requestId);
+                }
+            } else if (event.data.type === "AI_ERROR") {
+                const resolve = pendingRequests.get(event.data.requestId);
+                if (resolve) {
+                    resolve("Fehler: Die KI konnte nicht antworten.");
+                    pendingRequests.delete(event.data.requestId);
+                }
+            }
+        });
+
+        async function requestAI(prompt) {
+            const requestId = Date.now().toString();
+            
+            // Nachricht an das übergeordnete Perchance-Fenster schicken
+            window.parent.postMessage({
+                type: "AI_REQUEST",
+                requestId: requestId,
+                instruction: prompt
+            }, "*");
+
+            // Auf Antwort warten
+            return new Promise((resolve) => {
+                pendingRequests.set(requestId, resolve);
+                // Timeout nach 30 Sekunden
+                setTimeout(() => {
+                    if (pendingRequests.has(requestId)) {
+                        resolve("Die KI braucht zu lange zum Antworten...");
+                        pendingRequests.delete(requestId);
+                    }
+                }, 30000);
+            });
+        }
+
+        // --- GAME LOGIC ---
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const text = input.value.trim();
+            
+            if (!text || sendBtn.disabled) return;
+            
+            addUserMessage(text);
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            const room = rooms[currentRoom];
+            const prompt = `Du bist die Atmosphäre eines Mystery-Hauses. 
+                Aktueller Ort: ${room.title} (${room.description}). 
+                NPCs hier: ${npcs.filter(n => n.location === room.location).map(n => n.name).join(", ") || "Keine"}.
+                Spieler sagt: "${text}". 
+                Antworte kurz (max 3 Sätze), atmosphärisch und immersiv.`;
+
+            const aiResponse = await requestAI(prompt);
+            
+            addAIMessage(aiResponse);
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+        }
 
         function changeRoom(roomId) {
             if (!rooms[roomId]) return;
-            
             currentRoom = roomId;
             const room = rooms[roomId];
-            const location = locations[room.location];
             
             document.getElementById('currentRoomName').textContent = room.title;
-            document.getElementById('locationInfo').textContent = `📍 Location: ${location.name}`;
+            document.getElementById('locationInfo').textContent = `📍 Location: ${locations[room.location].name}`;
             document.getElementById('roomDescription').textContent = room.description;
             
-            // Update room buttons
             document.querySelectorAll('.room-button').forEach(btn => {
-                btn.classList.remove('current');
-                if (btn.dataset.room === roomId) {
-                    btn.classList.add('current');
-                }
+                btn.classList.toggle('current', btn.dataset.room === roomId);
             });
             
             updateNPCList();
-            
-            // Add AI message about room change
-            addAIMessage(`Du bist jetzt im ${room.title}. ${getRoomHint(roomId)}`);
+            addSystemMessage(`Du betrittst: ${room.title}`);
+        }
+
+        // --- UI HELPERS ---
+
+        function addUserMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message user-message';
+            div.textContent = msg;
+            appendAndScroll(div);
+        }
+
+        function addAIMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message ai-message';
+            div.textContent = msg;
+            appendAndScroll(div);
+        }
+
+        function addSystemMessage(msg) {
+            const div = document.createElement('div');
+            div.className = 'message system-message';
+            div.textContent = `— ${msg} —`;
+            appendAndScroll(div);
+        }
+
+        function appendAndScroll(el) {
+            const chat = document.getElementById('chatMessages');
+            chat.appendChild(el);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function updateNPCList() {
+            const list = document.getElementById('npcList');
+            const here = npcs.filter(n => n.location === rooms[currentRoom].location);
+            if (here.length === 0) {
+                list.innerHTML = '<div style="color: #757575; text-align: center;">Niemand hier...</div>';
+                return;
+            }
+            list.innerHTML = here.map(n => `
+                <div class="npc-item">
+                    <div class="npc-id">${n.id}</div>
+                    <div class="npc-name">${n.name}</div>
+                    <div class="npc-personality">${n.personality}</div>
+                </div>
+            `).join('');
         }
 
         function updateTime() {
@@ -472,178 +566,16 @@
             if (currentTime.minute >= 60) {
                 currentTime.minute = 0;
                 currentTime.hour++;
-                
-                if (currentTime.hour >= 24) {
-                    currentTime.hour = 0;
-                    currentTime.day++;
-                    
-                    if (currentTime.day > 30) {
-                        currentTime.day = 1;
-                        // Month logic could be added here
-                    }
-                }
+                if (currentTime.hour >= 24) { currentTime.hour = 0; currentTime.day++; }
             }
-            
-            updateTimeDisplay();
-            checkNightEvent();
+            document.getElementById('currentTime').textContent = `${String(currentTime.hour).padStart(2, '0')}:${String(currentTime.minute).padStart(2, '0')}`;
+            document.getElementById('currentDate').textContent = `Tag ${currentTime.day}, Januar 2024`;
         }
 
-        function updateTimeDisplay() {
-            const timeString = `${String(currentTime.hour).padStart(2, '0')}:${String(currentTime.minute).padStart(2, '0')}`;
-            const dateString = `Tag ${currentTime.day}, ${currentTime.month} ${currentTime.year}`;
-            
-            document.getElementById('currentTime').textContent = timeString;
-            document.getElementById('currentDate').textContent = dateString;
-        }
-
-        function checkNightEvent() {
-            // Trigger event at midnight (00:00)
-            if (currentTime.hour === 0 && currentTime.minute === 0 && currentTime.day !== lastNightEvent) {
-                lastNightEvent = currentTime.day;
-                triggerNightEvent();
-            }
-        }
-
-        function triggerNightEvent() {
-            const eventContainer = document.getElementById('eventContainer');
-            eventContainer.innerHTML = `
-                <div class="event-notification">
-                    <strong>🚪 Es klopft an der Tür!</strong><br>
-                    Jemand steht vor der Haustür...
-                </div>
-            `;
-            
-            // Create a new NPC at the front door
-            const newNPC = {
-                id: generateNPCId(),
-                name: "Unbekannter Besucher",
-                appearance: "Eine dunkle Gestalt, kaum im Schein der Laterne zu erkennen",
-                personality: "Geheimnisvoll, leise, beobachtend",
-                location: "haustuer_vorne"
-            };
-            
-            npcs.push(newNPC);
-            updateNPCList();
-            
-            addAIMessage(`🚪 Es klopft an der Tür! Ein neuer Besucher ist vor der Haustür erschienen. Ein NPC mit der ID ${newNPC.id} wartet dort.`);
-            
-            // Remove event notification after 10 seconds
-            setTimeout(() => {
-                eventContainer.innerHTML = '';
-            }, 10000);
-        }
-
-        function generateNPCId() {
-            return Math.random().toString(36).substring(2, 11).toUpperCase();
-        }
-
-        function updateNPCList() {
-            const npcList = document.getElementById('npcList');
-            const currentLocation = rooms[currentRoom].location;
-            
-            // Get NPCs in current location
-            const npcsInLocation = npcs.filter(npc => npc.location === currentLocation);
-            
-            if (npcsInLocation.length === 0) {
-                npcList.innerHTML = '<div style="color: #757575; text-align: center;">Keine NPCs in der Nähe</div>';
-                return;
-            }
-            
-            npcList.innerHTML = npcsInLocation.map(npc => `
-                <div class="npc-item">
-                    <div class="npc-id">ID: ${npc.id}</div>
-                    <div class="npc-name">${npc.name}</div>
-                    <div class="npc-location">📍 ${locations[npc.location].name}</div>
-                    <div class="npc-personality">${npc.personality}</div>
-                </div>
-            `).join('');
-        }
-
-        function getRoomHint(roomId) {
-            const hints = {
-                hallway: "Von hier aus kannst du fast jeden Raum erreichen.",
-                bathroom: "Der Spiegel könnte Geheimnisse bewahren.",
-                livingroom1: "Das Kaminfeuer scheint eine Geschichte zu erzählen.",
-                livingroom2: "Alles ist hier anders als es scheint.",
-                bedroom: "Das Tagebuch könnte wichtige Informationen enthalten.",
-                storageroom: "In den Kisten könnten verborgene Schätze liegen.",
-                kitchen: "Die Küche nährt mehr als nur den Körper.",
-                basement: "Die Maschine im Keller könnte der Schlüssel zu allem sein."
-            };
-            return hints[roomId] || "";
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            addUserMessage(message);
-            input.value = '';
-            
-            // Simulate AI response
-            setTimeout(() => {
-                const aiResponse = generateAIResponse(message);
-                addAIMessage(aiResponse);
-            }, 1000);
-        }
-
-        function addUserMessage(message) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message user-message';
-            messageDiv.textContent = message;
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function addAIMessage(message) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ai-message';
-            messageDiv.textContent = message;
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function generateAIResponse(userMessage) {
-            const responses = [
-                "Das ist eine interessante Beobachtung. In diesem Haus ist nichts wirklich so, wie es scheint.",
-                "Hör genau hin. Die Wände haben Ohren und die Gegenstände erzählen Geschichten.",
-                "Sei vorsichtig mit deinen Entscheidungen. Jeder Raum hat seine eigenen Regeln.",
-                "Du bist hier nicht allein. Aber sind die anderen wirklich menschlich?",
-                "Die Zeit verläuft hier anders. Was gestern war, könnte morgen sein.",
-                "Manche Türen sollten besser verschlossen bleiben. Andere drängen sich geradezu auf, geöffnet zu werden.",
-                "Vertraue deinen Instinkten, aber frage dich: Sind es wirklich deine Instinkte?",
-                "In diesem Haus sind die Antworten oft gefährlicher als die Fragen."
-            ];
-            
-            const currentRoomContext = rooms[currentRoom];
-            const roomSpecificResponses = [
-                `Im ${currentRoomContext.title} gibt es Besonderheiten zu entdecken. ${getRoomHint(currentRoom)}`,
-                "Die Verbindung zwischen den Räumen ist mysteriös. Manchmal ändern sie sich.",
-                "Jeder Raum hat eine Seele. Lerne sie kennen, bevor du weitergehst."
-            ];
-            
-            const allResponses = [...responses, ...roomSpecificResponses];
-            return allResponses[Math.floor(Math.random() * allResponses.length)];
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
             changeRoom('hallway');
-            updateNPCList();
-            updateTimeDisplay();
-            
-            // Start time system (update every 2 seconds = 10 minutes game time)
-            setInterval(updateTime, 2000);
+            setInterval(updateTime, 5000); // Alle 5 Sek vergehen 10 Min im Spiel
         });
     </script>
 </body>
