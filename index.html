@@ -38,21 +38,25 @@
     continueBtn.onclick = () => {
       console.log("Continue clicked");
       // Logic to load save game would go here
+      window.location.href = 'game.html';
     };
 
     newGameBtn.onclick = () => {
       console.log("New Game clicked");
       // Logic to start fresh would go here
+      window.location.href = 'game.html';
     };
 
     createBtn.onclick = () => {
       console.log("Create clicked");
       // Logic for character/world creation would go here
+      window.open('create.html', '_blank');
     };
 
     settingsBtn.onclick = () => {
       console.log("Settings clicked");
       // Logic to open settings menu would go here
+      alert('Settings coming soon!');
     };
   </script>
 </body>
