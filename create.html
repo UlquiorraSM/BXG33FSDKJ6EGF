@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC Creator - No, I'm not A Human</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4a4a4a, #6a6a6a);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #9e9e9e;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #9e9e9e;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #9e9e9e;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group .hint {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #9e9e9e;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #757575;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .npc-preview {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .npc-preview h3 {
+            color: #9e9e9e;
+            margin-bottom: 15px;
+        }
+
+        .npc-preview-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .npc-preview-label {
+            font-weight: bold;
+            color: #9e9e9e;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎭 NPC Creator</h1>
+        
+        <div id="successMessage" style="display: none;"></div>
+        
+        <form id="npcForm">
+            <div class="form-group">
+                <label for="npcName">Name *</label>
+                <input type="text" id="npcName" name="name" required placeholder="z.B. Der Wächter, Elena, Unbekannter">
+            </div>
+
+            <div class="form-group">
+                <label for="npcAppearance">Aussehen *</label>
+                <textarea id="npcAppearance" name="appearance" required placeholder="Beschreibe das Aussehen des NPCs..."></textarea>
+                <div class="hint">Beschreibe Größe, Kleidung, besondere Merkmale etc.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="npcPersonality">Persönlichkeit *</label>
+                <textarea id="npcPersonality" name="personality" required placeholder="Beschreibe die Persönlichkeit..."></textarea>
+                <div class="hint">Eigenschaften, Verhalten, Stimmungen etc.</div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #9e9e9e;">Start-Location</label>
+                <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.3); padding: 12px; border-radius: 8px; color: rgba(255, 255, 255, 0.7);">
+                    🚪 NPCs erscheinen automatisch zufällig vor der Haustür
+                </div>
+            </div>
+
+            <div class="npc-preview" id="npcPreview" style="display: none;">
+                <h3>Vorschau</h3>
+                <div class="npc-preview-item">
+                    <span class="npc-preview-label">ID:</span>
+                    <span id="previewId">-</span>
+                </div>
+                <div class="npc-preview-item">
+                    <span class="npc-preview-label">Name:</span>
+                    <span id="previewName">-</span>
+                </div>
+                <div class="npc-preview-item">
+                    <span class="npc-preview-label">Aussehen:</span>
+                    <span id="previewAppearance">-</span>
+                </div>
+                <div class="npc-preview-item">
+                    <span class="npc-preview-label">Persönlichkeit:</span>
+                    <span id="previewPersonality">-</span>
+                </div>
+                <div class="npc-preview-item">
+                    <span class="npc-preview-label">Location:</span>
+                    <span id="previewLocation">-</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="window.close()">Schließen</button>
+                <button type="button" class="btn btn-primary" onclick="generateNPC()">ID Generieren</button>
+                <button type="submit" class="btn btn-primary">NPC Erstellen</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let generatedId = '';
+
+        function generateNPCId() {
+            return Math.random().toString(36).substring(2, 11).toUpperCase();
+        }
+
+        function generateNPC() {
+            generatedId = generateNPCId();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const form = document.getElementById('npcForm');
+            const formData = new FormData(form);
+            
+            const name = formData.get('name') || '-';
+            const appearance = formData.get('appearance') || '-';
+            const personality = formData.get('personality') || '-';
+            
+            document.getElementById('previewId').textContent = generatedId || '-';
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewAppearance').textContent = appearance;
+            document.getElementById('previewPersonality').textContent = personality;
+            document.getElementById('previewLocation').textContent = '🚪 Zufällig vor der Haustür';
+            
+            document.getElementById('npcPreview').style.display = 'block';
+        }
+
+        function getLocationName(locationId) {
+            const locations = {
+                'haus_flur': 'Haus - Flur',
+                'haus_bad': 'Haus - Bad',
+                'haus_wohnzimmer1': 'Haus - Wohnzimmer 1',
+                'haus_wohnzimmer2': 'Haus - Wohnzimmer 2',
+                'haus_schlafzimmer': 'Haus - Schlafzimmer',
+                'haus_lagerraum': 'Haus - Lagerraum',
+                'haus_kueche': 'Haus - Küche',
+                'haus_keller': 'Haus - Keller',
+                'haustuer_vorne': 'Haustür - Vorne'
+            };
+            return locations[locationId] || locationId;
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Add event listeners for real-time preview
+        document.getElementById('npcName').addEventListener('input', updatePreview);
+        document.getElementById('npcAppearance').addEventListener('input', updatePreview);
+        document.getElementById('npcPersonality').addEventListener('input', updatePreview);
+
+        // Handle form submission
+        document.getElementById('npcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            if (!generatedId) {
+                generatedId = generateNPCId();
+            }
+            
+            const npc = {
+                id: generatedId,
+                name: formData.get('name'),
+                appearance: formData.get('appearance'),
+                personality: formData.get('personality'),
+                location: 'haustuer_vorne' // NPCs erscheinen immer vor der Haustür
+            };
+            
+            // Save to localStorage (in a real app, this would be sent to a server)
+            let savedNPCs = JSON.parse(localStorage.getItem('createdNPCs') || '[]');
+            savedNPCs.push(npc);
+            localStorage.setItem('createdNPCs', JSON.stringify(savedNPCs));
+            
+            // Also save to game.html's npcs array if possible
+            try {
+                if (window.opener && window.opener.npcs) {
+                    window.opener.npcs.push(npc);
+                    window.opener.updateNPCList();
+                }
+            } catch (e) {
+                console.log('Could not update main game:', e);
+            }
+            
+            showSuccess(`NPC "${npc.name}" wurde erfolgreich erstellt mit ID: ${npc.id}`);
+            
+            // Reset form
+            this.reset();
+            generatedId = '';
+            document.getElementById('npcPreview').style.display = 'none';
+        });
+
+        // Initialize with a generated ID
+        generateNPC();
+    </script>
+</body>
+</html>

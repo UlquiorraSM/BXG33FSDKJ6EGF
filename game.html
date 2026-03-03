@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No, I'm not A Human</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4a4a4a, #6a6a6a);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .left-panel {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .center-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .room-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .location-info {
+            color: #9e9e9e;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .time-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .time-display .date {
+            font-size: 1.1em;
+            color: #9e9e9e;
+            margin-bottom: 5px;
+        }
+
+        .time-display .time {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .npc-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .npc-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .npc-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .npc-id {
+            font-size: 0.8em;
+            color: #757575;
+            font-family: monospace;
+        }
+
+        .npc-name {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .npc-location {
+            font-size: 0.9em;
+            color: #9e9e9e;
+        }
+
+        .npc-personality {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+
+        .event-notification {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+
+        .map-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #9e9e9e;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .room-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .room-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .room-button.current {
+            background: rgba(158, 158, 158, 0.3);
+            border-color: #9e9e9e;
+            font-weight: bold;
+        }
+
+
+        .chat-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #9e9e9e;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: rgba(158, 158, 158, 0.2);
+            text-align: right;
+            margin-left: 20%;
+        }
+
+        .ai-message {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 20%;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .send-button {
+            background: #9e9e9e;
+            border: none;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: #757575;
+            transform: translateY(-1px);
+        }
+
+        .current-room-indicator {
+            background: rgba(158, 158, 158, 0.2);
+            border: 1px solid #9e9e9e;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .connection-hint {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="map-title">🗺️ Karte</div>
+            <div class="current-room-indicator">
+                <div>Aktueller Raum:</div>
+                <div id="currentRoomName" style="font-weight: bold; margin-top: 5px;">Flur</div>
+            </div>
+            <div class="room-grid">
+                <button class="room-button" onclick="changeRoom('hallway')" data-room="hallway">Flur</button>
+                <button class="room-button" onclick="changeRoom('bathroom')" data-room="bathroom">Bad</button>
+                <button class="room-button" onclick="changeRoom('livingroom1')" data-room="livingroom1">Wohnzimmer 1</button>
+                <button class="room-button" onclick="changeRoom('livingroom2')" data-room="livingroom2">Wohnzimmer 2</button>
+                <button class="room-button" onclick="changeRoom('bedroom')" data-room="bedroom">Schlafzimmer</button>
+                <button class="room-button" onclick="changeRoom('storageroom')" data-room="storageroom">Lagerraum</button>
+                <button class="room-button" onclick="changeRoom('kitchen')" data-room="kitchen">Küche</button>
+                <button class="room-button" onclick="changeRoom('basement')" data-room="basement">Keller</button>
+            </div>
+            <div class="connection-hint">
+                💡 Tipp: Die Räume sind miteinander verbunden
+            </div>
+            
+            <div class="time-display">
+                <div class="date" id="currentDate">Tag 1, Januar 2024</div>
+                <div class="time" id="currentTime">00:00</div>
+            </div>
+            
+            <div id="eventContainer"></div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #9e9e9e; margin-bottom: 10px;">👥 NPCs in der Nähe</h3>
+                <div class="npc-list" id="npcList">
+                    <!-- NPCs werden hier dynamisch eingefügt -->
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="window.open('create.html', '_blank')" style="background: #9e9e9e; border: none; color: #000; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">
+                    ➕ NPC erstellen
+                </button>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div class="room-container">
+                <div class="location-info" id="locationInfo">
+                    📍 Location: Haus - Flur
+                </div>
+                <h2 style="margin-bottom: 15px; color: #9e9e9e;">Aktuelle Umgebung</h2>
+                <div id="roomDescription" style="line-height: 1.6;">
+                    Du stehst in einem langen, dunklen Flur. Die Wände sind mit alten Familienfotos bedeckt, 
+                    deren Augen dir zu folgen scheinen. Das Knarren des Holzbodens unter deinen Füßen 
+                    erfüllt die Stille. Mehrere Türen führen zu verschiedenen Räumen in diesem mysteriösen Haus.
+                </div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-title">🤖 KI Assistent</div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai-message">
+                        Willkommen in der Welt von "No, I'm not A Human". Ich bin dein KI-Assistent. 
+                        Wie kann ich dir helfen, dieses mysteriöse Haus zu erkunden?
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Nachricht eingeben..." onkeypress="handleKeyPress(event)">
+                    <button class="send-button" onclick="sendMessage()">Senden</button>
+                </div>
+            </div>
+        <div class="right-panel">
+            <!-- Rechte Spalte bleibt leer für zukünftige Features -->
+        </div>
+    </div>
+
+    <script>
+        const locations = {
+            'haus_flur': { name: 'Haus - Flur', description: 'Der zentrale Flur des mysteriösen Hauses' },
+            'haus_bad': { name: 'Haus - Bad', description: 'Ein kleines, feuchtes Bad mit Spiegel' },
+            'haus_wohnzimmer1': { name: 'Haus - Wohnzimmer 1', description: 'Gemütliches Wohnzimmer mit Kamin' },
+            'haus_wohnzimmer2': { name: 'Haus - Wohnzimmer 2', description: 'Spiegelverkehrtes Wohnzimmer' },
+            'haus_schlafzimmer': { name: 'Haus - Schlafzimmer', description: 'Großes Schlafzimmer mit vierposter-Bett' },
+            'haus_lagerraum': { name: 'Haus - Lagerraum', description: 'Überfüllter Raum mit alten Kisten' },
+            'haus_kueche': { name: 'Haus - Küche', description: 'Alte Küche mit kupfernen Pfannen' },
+            'haus_keller': { name: 'Haus - Keller', description: 'Dunkler Keller mit mysteriöser Maschine' },
+            'haustuer_vorne': { name: 'Haustür - Vorne', description: 'Die Eingangstür des Hauses' }
+        };
+
+        const rooms = {
+            hallway: {
+                title: "Flur",
+                location: 'haus_flur',
+                description: "Du stehst in einem langen, dunklen Flur. Die Wände sind mit alten Familienfotos bedeckt, deren Augen dir zu folgen scheinen. Das Knarren des Holzbodens unter deinen Füßen erfüllt die Stille. Mehrere Türen führen zu verschiedenen Räumen in diesem mysteriösen Haus.",
+                connections: ["bathroom", "livingroom1", "bedroom", "kitchen"]
+            },
+            bathroom: {
+                title: "Bad",
+                location: 'haus_bad',
+                description: "Ein kleines, feuchtes Bad mit einem alten Spiegel über dem Waschbecken. Der Spiegel zeigt manchmal mehr als nur dein Spiegelbild. Der Wasserhahn tropft rhythmisch, als würde er eine geheime Botschaft senden.",
+                connections: ["hallway", "bedroom"]
+            },
+            livingroom1: {
+                title: "Wohnzimmer 1",
+                location: 'haus_wohnzimmer1',
+                description: "Ein gemütliches Wohnzimmer mit einem alten Kamin, dessen Feuer nie wirklich ausgeht. Die Möbel sind mit weißen Laken abgedeckt, als würden sie auf jemanden warten. Ein alter Fernseher flackert gelegentlich ohne Strom.",
+                connections: ["hallway", "livingroom2", "kitchen"]
+            },
+            livingroom2: {
+                title: "Wohnzimmer 2",
+                location: 'haus_wohnzimmer2',
+                description: "Ein zweites Wohnzimmer, das seltsamerweise identisch mit dem ersten aussieht, aber alles ist spiegelverkehrt. Die Bücher im Regal sind in einer Sprache geschrieben, die du nicht verstehen kannst.",
+                connections: ["livingroom1", "storageroom"]
+            },
+            bedroom: {
+                title: "Schlafzimmer",
+                location: 'haus_schlafzimmer',
+                description: "Ein großes Schlafzimmer mit einem vierposter-Bett. Die Vorhänge bewegen sich, obwohl kein Wind weht. Auf dem Nachttisch liegt ein altes Tagebuch, dessen Seiten sich von selbst umblättern.",
+                connections: ["hallway", "bathroom", "storageroom"]
+            },
+            storageroom: {
+                title: "Lagerraum",
+                location: 'haus_lagerraum',
+                description: "Ein überfüllter Lagerraum mit alten Kisten und vergessenen Gegenständen. Manchmal hört man leise Stimmen aus den Kisten, als würden die Gegenstände Geschichten erzählen.",
+                connections: ["livingroom2", "bedroom", "basement"]
+            },
+            kitchen: {
+                title: "Küche",
+                location: 'haus_kueche',
+                description: "Eine alte Küche mit kupfernen Pfannen, die an der Decke hängen. Der Kühlschrank ist immer kalt, obwohl er nicht eingesteckt ist. Manchmal riecht man frisch gebackenes Brot.",
+                connections: ["hallway", "livingroom1", "basement"]
+            },
+            basement: {
+                title: "Keller",
+                location: 'haus_keller',
+                description: "Ein dunkler, feuchter Keller mit Steinwänden. In der Ecke steht eine mysteriöse Maschine, die leise summt. Die Luft hier ist kalt und riecht nach Ozon und verlorenen Erinnerungen.",
+                connections: ["storageroom", "kitchen"]
+            }
+        };
+
+        let npcs = [
+            {
+                id: "SJHDNBDUID",
+                name: "Der Wächter",
+                appearance: "Eine hohe, schattenhafte Gestalt mit leuchtenden Augen",
+                personality: "Mysteriös, wachsam, geheimnisvoll",
+                location: "haus_flur"
+            },
+            {
+                id: "KDMXNCB872",
+                name: "Elena",
+                appearance: "Junge Frau mit langen, dunklen Haaren und einem alten Kleid",
+                personality: "Niedlich, freundlich, aber etwas ängstlich",
+                location: "haus_wohnzimmer1"
+            }
+        ];
+
+        let currentTime = {
+            day: 1,
+            month: "Januar",
+            year: 2024,
+            hour: 0,
+            minute: 0
+        };
+
+        let lastNightEvent = -1;
+        let currentRoom = 'hallway';
+        let messageCount = 0;
+
+        function changeRoom(roomId) {
+            if (!rooms[roomId]) return;
+            
+            currentRoom = roomId;
+            const room = rooms[roomId];
+            const location = locations[room.location];
+            
+            document.getElementById('currentRoomName').textContent = room.title;
+            document.getElementById('locationInfo').textContent = `📍 Location: ${location.name}`;
+            document.getElementById('roomDescription').textContent = room.description;
+            
+            // Update room buttons
+            document.querySelectorAll('.room-button').forEach(btn => {
+                btn.classList.remove('current');
+                if (btn.dataset.room === roomId) {
+                    btn.classList.add('current');
+                }
+            });
+            
+            updateNPCList();
+            
+            // Add AI message about room change
+            addAIMessage(`Du bist jetzt im ${room.title}. ${getRoomHint(roomId)}`);
+        }
+
+        function updateTime() {
+            currentTime.minute += 10;
+            if (currentTime.minute >= 60) {
+                currentTime.minute = 0;
+                currentTime.hour++;
+                
+                if (currentTime.hour >= 24) {
+                    currentTime.hour = 0;
+                    currentTime.day++;
+                    
+                    if (currentTime.day > 30) {
+                        currentTime.day = 1;
+                        // Month logic could be added here
+                    }
+                }
+            }
+            
+            updateTimeDisplay();
+            checkNightEvent();
+        }
+
+        function updateTimeDisplay() {
+            const timeString = `${String(currentTime.hour).padStart(2, '0')}:${String(currentTime.minute).padStart(2, '0')}`;
+            const dateString = `Tag ${currentTime.day}, ${currentTime.month} ${currentTime.year}`;
+            
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        function checkNightEvent() {
+            // Trigger event at midnight (00:00)
+            if (currentTime.hour === 0 && currentTime.minute === 0 && currentTime.day !== lastNightEvent) {
+                lastNightEvent = currentTime.day;
+                triggerNightEvent();
+            }
+        }
+
+        function triggerNightEvent() {
+            const eventContainer = document.getElementById('eventContainer');
+            eventContainer.innerHTML = `
+                <div class="event-notification">
+                    <strong>🚪 Es klopft an der Tür!</strong><br>
+                    Jemand steht vor der Haustür...
+                </div>
+            `;
+            
+            // Create a new NPC at the front door
+            const newNPC = {
+                id: generateNPCId(),
+                name: "Unbekannter Besucher",
+                appearance: "Eine dunkle Gestalt, kaum im Schein der Laterne zu erkennen",
+                personality: "Geheimnisvoll, leise, beobachtend",
+                location: "haustuer_vorne"
+            };
+            
+            npcs.push(newNPC);
+            updateNPCList();
+            
+            addAIMessage(`🚪 Es klopft an der Tür! Ein neuer Besucher ist vor der Haustür erschienen. Ein NPC mit der ID ${newNPC.id} wartet dort.`);
+            
+            // Remove event notification after 10 seconds
+            setTimeout(() => {
+                eventContainer.innerHTML = '';
+            }, 10000);
+        }
+
+        function generateNPCId() {
+            return Math.random().toString(36).substring(2, 11).toUpperCase();
+        }
+
+        function updateNPCList() {
+            const npcList = document.getElementById('npcList');
+            const currentLocation = rooms[currentRoom].location;
+            
+            // Get NPCs in current location
+            const npcsInLocation = npcs.filter(npc => npc.location === currentLocation);
+            
+            if (npcsInLocation.length === 0) {
+                npcList.innerHTML = '<div style="color: #757575; text-align: center;">Keine NPCs in der Nähe</div>';
+                return;
+            }
+            
+            npcList.innerHTML = npcsInLocation.map(npc => `
+                <div class="npc-item">
+                    <div class="npc-id">ID: ${npc.id}</div>
+                    <div class="npc-name">${npc.name}</div>
+                    <div class="npc-location">📍 ${locations[npc.location].name}</div>
+                    <div class="npc-personality">${npc.personality}</div>
+                </div>
+            `).join('');
+        }
+
+        function getRoomHint(roomId) {
+            const hints = {
+                hallway: "Von hier aus kannst du fast jeden Raum erreichen.",
+                bathroom: "Der Spiegel könnte Geheimnisse bewahren.",
+                livingroom1: "Das Kaminfeuer scheint eine Geschichte zu erzählen.",
+                livingroom2: "Alles ist hier anders als es scheint.",
+                bedroom: "Das Tagebuch könnte wichtige Informationen enthalten.",
+                storageroom: "In den Kisten könnten verborgene Schätze liegen.",
+                kitchen: "Die Küche nährt mehr als nur den Körper.",
+                basement: "Die Maschine im Keller könnte der Schlüssel zu allem sein."
+            };
+            return hints[roomId] || "";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const aiResponse = generateAIResponse(message);
+                addAIMessage(aiResponse);
+            }, 1000);
+        }
+
+        function addUserMessage(message) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.textContent = message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addAIMessage(message) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai-message';
+            messageDiv.textContent = message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const responses = [
+                "Das ist eine interessante Beobachtung. In diesem Haus ist nichts wirklich so, wie es scheint.",
+                "Hör genau hin. Die Wände haben Ohren und die Gegenstände erzählen Geschichten.",
+                "Sei vorsichtig mit deinen Entscheidungen. Jeder Raum hat seine eigenen Regeln.",
+                "Du bist hier nicht allein. Aber sind die anderen wirklich menschlich?",
+                "Die Zeit verläuft hier anders. Was gestern war, könnte morgen sein.",
+                "Manche Türen sollten besser verschlossen bleiben. Andere drängen sich geradezu auf, geöffnet zu werden.",
+                "Vertraue deinen Instinkten, aber frage dich: Sind es wirklich deine Instinkte?",
+                "In diesem Haus sind die Antworten oft gefährlicher als die Fragen."
+            ];
+            
+            const currentRoomContext = rooms[currentRoom];
+            const roomSpecificResponses = [
+                `Im ${currentRoomContext.title} gibt es Besonderheiten zu entdecken. ${getRoomHint(currentRoom)}`,
+                "Die Verbindung zwischen den Räumen ist mysteriös. Manchmal ändern sie sich.",
+                "Jeder Raum hat eine Seele. Lerne sie kennen, bevor du weitergehst."
+            ];
+            
+            const allResponses = [...responses, ...roomSpecificResponses];
+            return allResponses[Math.floor(Math.random() * allResponses.length)];
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            changeRoom('hallway');
+            updateNPCList();
+            updateTimeDisplay();
+            
+            // Start time system (update every 2 seconds = 10 minutes game time)
+            setInterval(updateTime, 2000);
+        });
+    </script>
+</body>
+</html>
